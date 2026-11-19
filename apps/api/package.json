@@ -1,0 +1,31 @@
+{
+  "name": "@sellio/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm build && concurrently --kill-others \"tsc --watch --preserveWatchOutput\" \"node --watch dist/main.js\"",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.5.1",
+    "@nestjs/config": "12.1.1",
+    "@nestjs/core": "12.5.1",
+    "@nestjs/platform-express": "12.5.1",
+    "@nestjs/swagger": "12.1.2",
+    "@sellio/types": "workspace:*",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@sellio/config": "workspace:*",
+    "@sellio/eslint-config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "9.39.5",
+    "typescript": "5.9.3"
+  }
+}

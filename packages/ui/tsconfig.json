@@ -1,0 +1,5 @@
+{
+  "extends": "@sellio/config/nextjs.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["src/**/*.tsx"]
+}

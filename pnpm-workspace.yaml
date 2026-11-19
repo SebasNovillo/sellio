@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+useNodeVersion: 22.22.3
+nodeVersion: 22.22.3
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@tailwindcss/oxide'
+  - sharp
+  - unrs-resolver
+
+ignoredBuiltDependencies:
+  - '@scarf/scarf'

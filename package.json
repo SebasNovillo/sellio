@@ -1,0 +1,16 @@
+{
+  "name": "sellio",
+  "private": true,
+  "packageManager": "pnpm@10.34.9",
+  "engines": { "node": ">=22.12.0 <23 || >=24.0.0", "pnpm": ">=10.34.9 <11" },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "dev:storefront": "turbo run dev --filter=@sellio/storefront",
+    "dev:admin": "turbo run dev --filter=@sellio/admin",
+    "dev:api": "turbo run dev --filter=@sellio/api"
+  },
+  "devDependencies": { "turbo": "2.11.13", "typescript": "5.9.3" }
+}

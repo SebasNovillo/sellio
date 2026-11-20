@@ -46,7 +46,7 @@ flowchart TB
 | Storefront | Next.js, TypeScript, Tailwind CSS | Catalog browsing, search/filter UI, cart UX, customer account and checkout UX | Final pricing, stock reservations, payment confirmation |
 | Admin | Next.js, TypeScript, Tailwind CSS | Product/variant editing, stock operations, orders, customer lookup, basic reporting | Privilege assignment without API checks |
 | Commerce API | NestJS, TypeScript, REST | Business rules, authorization, persistence, integrations, transactional workflows | Store-specific visual branding |
-| Database | PostgreSQL + Prisma (proposed) | Transactional records and integrity constraints | External payment truth independent of provider reconciliation |
+| Database | PostgreSQL + Prisma 7.10.1 (Part A foundation) | Schema/client infrastructure; transactional records and constraints after migration approval | External payment truth independent of provider reconciliation |
 | Identity | Supabase Auth | Sign-up, sign-in, recovery, session tokens | Commerce roles and business permissions |
 | Payments | Stripe test environment | Payment collection and provider events | Direct client-side authority to mark an order paid |
 | Media | Supabase Storage | Product image objects | Catalog records and permissions |
@@ -167,7 +167,7 @@ Illustrative endpoints (not yet a finalized API contract):
 - **Integrity:** unique SKUs, slugs as scoped, provider event IDs, and cart variant combinations; indexed foreign keys and frequent query filters.
 - **Deletion:** archive products rather than removing records referenced by historical orders.
 
-The detailed [database design](../database/Sellio_DATABASE_DESIGN.md), [ERD](../database/ERD.md) and [implementation specification](../database/DATABASE_IMPLEMENTATION_SPEC.md) distinguish established targets from proposed field/cardinality/constraint refinements. The initial reservation target is 30 minutes coordinated with Stripe; published products require exactly one valid default variant. Payment success remains financial truth even when fulfillment requires persistent reconciliation. Detailed Prisma implementation is **not approved** by this document.
+The detailed [database design](../database/Sellio_DATABASE_DESIGN.md), [ERD](../database/ERD.md) and [implementation specification](../database/DATABASE_IMPLEMENTATION_SPEC.md) distinguish established targets from proposed field/cardinality/constraint refinements. The initial reservation target is 30 minutes coordinated with Stripe; published products require exactly one valid default variant. Payment success remains financial truth even when fulfillment requires persistent reconciliation. The owner authorized Part A schema/client/infrastructure on 2026-11-20; see [the foundation record](../database/PRISMA_FOUNDATION.md). No migration, connection or commerce service is claimed or authorized by that foundation.
 
 ## 10. Checkout and payment lifecycle
 
@@ -276,7 +276,7 @@ Record major choices in `docs/decisions/` with **context, decision, alternatives
 - ADR-003 — pnpm + Turborepo monorepo (proposed)
 - ADR-004 — Next.js storefront and admin (proposed)
 - ADR-005 — NestJS commerce API (proposed)
-- ADR-006 — PostgreSQL + Prisma (proposed)
+- ADR-006 — PostgreSQL + Prisma (accepted for stack/Part A; migration approval pending)
 - ADR-007 — Supabase Auth (proposed)
 - ADR-008 — Stripe payments (proposed)
 - ADR-009 — Single-store initial deployment (accepted in planning)

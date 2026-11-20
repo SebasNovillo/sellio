@@ -7,9 +7,9 @@ Sellio is a portfolio-quality electronics e-commerce platform demonstrating prof
 - Frontends: Next.js App Router, React, TypeScript, Tailwind CSS, ESLint.
 - Backend: Node.js, NestJS, REST, OpenAPI / Swagger.
 - Workspace: pnpm 10, Turborepo, shared TypeScript and ESLint configuration.
-- Planned integrations: PostgreSQL with Prisma, Supabase Auth and Storage, Stripe test mode.
+- Database foundation: PostgreSQL Prisma schema/client (22 models); migrations have not been applied. Planned integrations: Supabase Auth and Storage, Stripe test mode.
 - CI: GitHub Actions runs installation, linting, TypeScript checks, and production builds.
-- Planned testing: Vitest or Jest for behavior and Playwright for browser flows. Test runners and integration SDKs are deferred until they are needed; no business features or database schema exist yet.
+- Offline database infrastructure tests use Node's built-in runner. Vitest or Jest for domain behavior and Playwright for browser flows remain planned; no business features are implemented.
 
 ## Structure
 
@@ -46,7 +46,7 @@ Install the pinned package manager with `npm install --global pnpm@10.34.9`, or 
 pnpm install
 ```
 
-Environment files are optional for the initial scaffold; defaults use the ports below. To prepare local configuration in PowerShell:
+Frontend environment files remain optional. The API now requires a PostgreSQL DATABASE_URL to configure its lazy Prisma client; startup and the existing health endpoint do not query it. Prisma validation/generation and builds need no database URL or running database. To prepare local configuration in PowerShell:
 
 ```powershell
 Copy-Item apps/storefront/.env.example apps/storefront/.env.local
@@ -69,6 +69,9 @@ Run commands from the repository root:
 | `pnpm lint` | Lint application and shared code |
 | `pnpm typecheck` | Generate Next.js route types and check TypeScript across the workspace |
 | `pnpm build` | Build shared packages and all applications |
+| `pnpm --filter @sellio/api db:validate` | Validate the 22-model Prisma schema without connecting |
+| `pnpm --filter @sellio/api db:generate` | Generate the API's local Prisma Client |
+| `pnpm --filter @sellio/api test:database` | Compile and run offline infrastructure tests; TCP is prohibited |
 | `pnpm --filter @sellio/storefront start` | Serve the built storefront |
 | `pnpm --filter @sellio/admin start` | Serve the built admin |
 | `pnpm --filter @sellio/api start` | Serve the built API |
@@ -89,6 +92,6 @@ The health endpoint verifies the API process only. Swagger is enabled by default
 
 The frontends may share UI and contracts but do not depend on one another. Backend modules own business logic and privileged integrations. See [architecture](docs/architecture/README.md), [database](docs/database/README.md), [design](docs/design/README.md), and [initial decisions](docs/decisions/0001-monorepo-foundation.md).
 
-Future tasks must provision PostgreSQL, define Prisma migrations, configure Supabase Auth and Storage, and supply Stripe test credentials before those integrations can operate. Add testing tools alongside the first relevant behavior. CI runs automatically when the workflow is pushed to GitHub; this setup does not create commits, branches, or a remote deployment.
+Part A provides the Prisma foundation only. See [Prisma foundation and migration SQL](docs/database/PRISMA_FOUNDATION.md) for configuration, model/enum inventory, custom PostgreSQL constraints, provisional schema details and the next approval gate. Future tasks must review/generate/apply migrations to approved isolated PostgreSQL, configure Supabase and Stripe, and implement the domain services. CI runs offline schema/client tests and existing checks; it does not migrate a database. No commits, branches or remote deployment are created automatically.
 
 Tooling notes: ESLint 9 is pinned for compatibility with the React lint plugin used by Next.js; npm marks this major as deprecated. pnpm may report the deliberately skipped `@scarf/scarf` install script, an optional telemetry script pulled in by Swagger. Neither warning prevents installation or verification.

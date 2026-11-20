@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm build && concurrently --kill-others \"tsc --watch --preserveWatchOutput\" \"node --watch dist/main.js\"",
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.prisma.json",
+    "db:validate": "prisma validate --config prisma.config.ts",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:format": "prisma format --config prisma.config.ts",
+    "test:database": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json && tsc -p tsconfig.test.json && node --test .test-build/database.test.js"
   },
   "dependencies": {
     "@nestjs/common": "12.5.1",
@@ -16,6 +20,8 @@
     "@nestjs/core": "12.5.1",
     "@nestjs/platform-express": "12.5.1",
     "@nestjs/swagger": "12.1.2",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
     "@sellio/types": "workspace:*",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
@@ -26,6 +32,8 @@
     "@types/node": "^22.0.0",
     "concurrently": "^9.0.0",
     "eslint": "9.39.5",
+    "dotenv": "18.0.10",
+    "prisma": "7.10.1",
     "typescript": "5.9.3"
   }
 }

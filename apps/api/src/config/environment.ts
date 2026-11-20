@@ -14,5 +14,17 @@ export function validateEnvironment(environment: Record<string, unknown>) {
     throw new Error('API_DOCS_ENABLED must be true or false.');
   }
 
+  if (environment.DATABASE_URL !== undefined) {
+    try {
+      if (typeof environment.DATABASE_URL !== 'string') throw new Error();
+      const databaseUrl = new URL(environment.DATABASE_URL);
+      if (!['postgresql:', 'postgres:'].includes(databaseUrl.protocol) || !databaseUrl.hostname) {
+        throw new Error();
+      }
+    } catch {
+      throw new Error('DATABASE_URL must be a valid PostgreSQL connection URL.');
+    }
+  }
+
   return { ...environment, PORT: port, NODE_ENV: nodeEnv, API_DOCS_ENABLED: docsEnabled === 'true' };
 }

@@ -1,0 +1,10 @@
+{
+  "extends": "@sellio/config/node.json",
+  "compilerOptions": {
+    "rootDir": "test",
+    "outDir": ".test-build",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["test/**/*.ts"]
+}

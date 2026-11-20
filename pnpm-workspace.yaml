@@ -6,9 +6,12 @@ useNodeVersion: 22.22.3
 nodeVersion: 22.22.3
 
 onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
   - '@nestjs/core'
   - '@tailwindcss/oxide'
   - sharp
+  - prisma
   - unrs-resolver
 
 ignoredBuiltDependencies:

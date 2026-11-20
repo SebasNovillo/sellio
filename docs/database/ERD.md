@@ -1,7 +1,9 @@
 # Sellio — Entity Relationship Diagram
 
 **Version:** 0.2 — 2026-11-19  
-**Status:** 22 entity names established; new field/relationship refinements proposed, not migration-approved.
+**Status:** Part A schema implements 22 entities and the documented concrete relationship refinements; no migration applied.
+
+The owner authorized Part A on 2026-11-20. See [the foundation record](PRISMA_FOUNDATION.md) for actual implementation choices and remaining schema review. Optional composite checkout ownership FKs are not adopted; accepted-payment same-order membership is enforced in Prisma. The diagram and service minimums remain valid; custom SQL and future domain services are not yet deployed.
 
 Read with the [database design](Sellio_DATABASE_DESIGN.md) and [implementation specification](DATABASE_IMPLEMENTATION_SPEC.md). [ADR-010](../decisions/ADR-010-checkout-attempt.md) approves CheckoutAttempt as entity 22, not every field below. No standalone ERD file existed before this revision; this diagram supersedes the embedded 21-entity conceptual diagram.
 

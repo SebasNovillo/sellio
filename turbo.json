@@ -9,6 +9,8 @@
     },
     "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true, "env": ["PORT", "NODE_ENV", "API_DOCS_ENABLED", "DATABASE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"] },
     "@sellio/ui#build": { "dependsOn": ["^build"], "outputs": [] },
+    "@sellio/api#build": { "dependsOn": ["^build"], "outputs": ["dist/**", "src/generated/prisma/**"] },
+    "@sellio/api#typecheck": { "dependsOn": ["^build", "^typecheck"], "outputs": ["src/generated/prisma/**"] },
     "lint": { "dependsOn": ["^lint"] },
     "typecheck": { "dependsOn": ["^build", "^typecheck"] }
   }

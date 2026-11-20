@@ -25,6 +25,8 @@ Use durable records plus transactional guards to prevent duplicate cart conversi
 
 Checkout lifecycle, cart conversion and provider payment lifecycle remain distinct. The detailed fields, status values, leases, uniqueness, FK actions, retention and reconciliation storage are proposals in the implementation specification. This approval does not authorize Prisma installation, schema creation, migrations, connections or business-feature implementation.
 
+**2026-11-20 scope update:** a subsequent owner instruction separately authorized Part A installation/schema/client/infrastructure using consistent proposed contracts. [PRISMA_FOUNDATION.md](../database/PRISMA_FOUNDATION.md) records the result and remaining ambiguities. That authorization does not apply migrations, connect a database or implement checkout/payment services; the original entity-only approval is preserved as history.
+
 ## Validation gate
 
 Approve the proposed persistence contract and relationship matrix before the initial migration. Future tests must cover replay/conflicting input, concurrent different keys for one cart, stale-worker recovery, interrupted provider operations and multiple payment attempts without duplicated inventory effects. Original accepted ADRs are preserved; other proposed ADRs are not promoted automatically.

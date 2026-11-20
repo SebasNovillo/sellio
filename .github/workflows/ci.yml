@@ -22,6 +22,8 @@ jobs:
           node-version: '22.22.3'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sellio/api db:validate
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+      - run: pnpm --filter @sellio/api test:database

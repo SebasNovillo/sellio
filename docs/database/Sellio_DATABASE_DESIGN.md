@@ -1,11 +1,14 @@
 # Sellio — Database Design Document
 
 **Version:** 0.2 (Draft)  
-**Status:** CheckoutAttempt approved as entity 22; detailed schema not approved for migrations  
+**Status:** Part A Prisma schema implemented; migration SQL/review/application pending
+
 **Last updated:** 2026-11-19  
 **Database:** PostgreSQL  
 **ORM:** Prisma  
 **Scope:** V1 single-store electronics storefront, reusable commerce core
+
+**Implementation update — 2026-11-20:** the owner authorized Part A schema/client/infrastructure using the consistent concrete contracts below. The [foundation record](PRISMA_FOUNDATION.md) identifies implemented fields and the remaining provisional nullability/metadata decisions; the Prisma schema is the implementation artifact. Historical proposal language below explains the design, not a prohibition on the now-authorized Part A. No migration has been generated/applied, no SQL constraints have been executed, and no business service or database connection is claimed.
 
 ## 1. Purpose and boundaries
 

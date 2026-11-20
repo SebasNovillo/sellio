@@ -1,10 +1,13 @@
 # Sellio — Database Implementation Specification
 
 **Version:** 0.2 — 2026-11-19  
-**Status:** Approved 22-entity architecture; detailed schema proposals await approval. No Prisma implementation or migration is authorized.  
+**Status:** Part A schema/client/infrastructure implemented under owner authorization dated 2026-11-20; no migration generated/applied or database connected.
+
 **Scope:** Single store, one inventory location, PostgreSQL + Prisma + NestJS.
 
 ## 1. Authority and decision status
+
+**Part A update (2026-11-20):** the owner authorized installing stable Prisma and implementing the detailed concrete contracts consistent with the approved V1 directions. [PRISMA_FOUNDATION.md](PRISMA_FOUNDATION.md) records the implemented choices, provisional nullability, service-enforced ownership alternative and future SQL. The tables below retain the design rationale; unresolved choices are not converted into invented business rules. Migration generation/application and remaining policies still require separate review/approval. Where older planning language below says installation is unauthorized or a concrete field is proposed, this scoped Part A authorization supersedes it, not the outstanding migration gate.
 
 Read the [PRD](../architecture/Sellio_PRD.md), [architecture](../architecture/Sellio_SYSTEM_ARCHITECTURE.md), [database design](Sellio_DATABASE_DESIGN.md), [ERD](ERD.md), and [ADRs](../decisions/).
 
@@ -233,7 +236,7 @@ Evaluate FK access and existing left-prefix coverage before adding redundant ind
 ## 11. Migration, environment, seeds and verification plan
 
 1. Approve B-01 through B-07, exact fields, ERD and FK actions. The intended baseline includes all 22 entities; any phased subset needs explicit scope approval.
-2. Verify stable Prisma/PostgreSQL compatibility with existing Node 22.22.3, TypeScript 5.9.3, NestJS 12 and ESM; pin versions and determine the actual client/driver/generation/migration workflow. No installation is authorized here.
+2. Part A selected and pinned stable Prisma CLI/client/adapter 7.10.1 against Node 22.22.3, TypeScript 5.9.3, NestJS 12 and ESM. PostgreSQL provisioning/version and migration execution remain pending. See the foundation record for configuration and offline verification.
 3. Keep definitions, migrations, seeds and client integration under apps/api, using infrastructure/module boundaries. Public DTOs remain in packages/types; no frontend Prisma imports or unrelated API restructuring.
 4. Use isolated development/test databases. DATABASE_URL remains server-only; separate runtime/migration/direct URLs only if needed. Explicitly configure CLI environment loading; Nest ConfigModule does not configure the Prisma CLI. Document privileges/extensions without connecting to Supabase.
 5. Generate one reviewed baseline migration only after explicit authorization. Include approved integrity indexes/checks and resolve cyclic Order/Payment FK creation order. Never replace deployment migration history with production db push.
@@ -259,6 +262,8 @@ Required future tests: ownership/FKs; key replay/conflict; stale-worker fencing;
 Later business policies, if approved storage suffices: exact key/guest-cart retention (48 hours/30 days still proposed), guest merge/caps, worker cadence, backoff, customer cancellation permissions, staff refund procedures, tax/rate providers, geography, rounding algorithm and reporting definitions. Decide these before their features ship. The 30-minute initial target is established; coordination and late-payment recovery mechanics are needed before checkout.
 
 The original design section 12 had a broader migration gate. This revision explicitly proposes separating schema shape from later behavior; owner approval of the narrowed gate is still required. Any tax/shipping/privacy/provider choice that changes storage remains blocking for affected tables. Entity approval alone does not approve a migration, a 23rd entity or a refund workflow.
+
+For the current Part A handoff, consult foundation sections 4 and 7 for the actual remaining migration requirements. Concrete proposed enums, Decimal(12,2), scalar FKs/deletion matrix, accepted-payment composite membership and required reservation links have been implemented. Optional composite checkout owner/source FKs are not adopted; locked ownership checks remain mandatory future service work. Custom partial indexes/CHECKs are documented SQL, not deployed protections. Schema-affecting brand/filter/media/guest choices and extra financial snapshot requiredness remain explicit review items.
 
 ## 13. Documentation and code alignment
 

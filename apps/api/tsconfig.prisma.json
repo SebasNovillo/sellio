@@ -1,5 +1,5 @@
 {
   "extends": "@sellio/config/node.json",
   "compilerOptions": { "noEmit": true },
-  "include": ["prisma.config.ts"]
+  "include": ["prisma.config.ts", "prisma.offline.config.ts"]
 }

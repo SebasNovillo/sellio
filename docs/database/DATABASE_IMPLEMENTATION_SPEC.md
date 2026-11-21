@@ -1,13 +1,15 @@
 # Sellio — Database Implementation Specification
 
 **Version:** 0.2 — 2026-11-19  
-**Status:** Part A schema/client/infrastructure implemented under owner authorization dated 2026-11-20; no migration generated/applied or database connected.
+**Status:** Initial migration generated locally for review under owner approval; no database connected or migration applied.
 
 **Scope:** Single store, one inventory location, PostgreSQL + Prisma + NestJS.
 
 ## 1. Authority and decision status
 
-**Part A update (2026-11-20):** the owner authorized installing stable Prisma and implementing the detailed concrete contracts consistent with the approved V1 directions. [PRISMA_FOUNDATION.md](PRISMA_FOUNDATION.md) records the implemented choices, provisional nullability, service-enforced ownership alternative and future SQL. The tables below retain the design rationale; unresolved choices are not converted into invented business rules. Migration generation/application and remaining policies still require separate review/approval. Where older planning language below says installation is unauthorized or a concrete field is proposed, this scoped Part A authorization supersedes it, not the outstanding migration gate.
+**Migration-readiness approvals (2026-11-20):** the owner approved gross line accounting with nullable tax/discount breakdowns; required order tax/shipping amounts with zero defaults; nullable saved/historical line2/phone/region; one active customer cart, unique non-null guest token hashes and exactly one cart owner type; and deferral of extra Brand archival fields, non-option attribute storage and variant media. These decisions supersede conflicting proposal/gate language below. The [initial migration](../../apps/api/prisma/migrations/20261120000000_initial/migration.sql) contains the full baseline plus custom SQL. No schema-readiness blocker from those four gates remains; connecting/applying still requires explicit approval.
+
+**Part A update (2026-11-20):** the owner authorized installing stable Prisma and implementing the detailed concrete contracts consistent with the approved V1 directions. [PRISMA_FOUNDATION.md](PRISMA_FOUNDATION.md) records the implemented choices, provisional nullability, service-enforced ownership alternative and future SQL. The tables below retain the design rationale; unresolved choices are not converted into invented business rules. The subsequent migration-preparation approval authorizes local SQL generation; database connection/application and later policies still require separate approval. Where older planning language below says installation is unauthorized or a concrete field is proposed, this scoped Part A authorization supersedes it, not the outstanding migration gate.
 
 Read the [PRD](../architecture/Sellio_PRD.md), [architecture](../architecture/Sellio_SYSTEM_ARCHITECTURE.md), [database design](Sellio_DATABASE_DESIGN.md), [ERD](ERD.md), and [ADRs](../decisions/).
 
@@ -159,15 +161,15 @@ Verify signatures/raw body, provider identity, amount/currency and order linkage
 
 Preserve Product.status. Every ACTIVE/published product has exactly one valid purchasable default variant and inventory balance. Drafts may temporarily lack a default. Partial uniqueness enforces at most one; publication/default-switch services enforce existence transactionally.
 
-Category and variant lifecycle fields already exist. Section 4 values are proposals, not permission to replace them with is_active. Brand archival representation is unresolved in the original Brand fields (B-02).
+Category and variant lifecycle fields already exist; Part A uses the section 4 enums without replacing them with is_active. The owner approved keeping Brand unchanged and deferring extra archival fields from the baseline.
 
 Proposed option_signature: prefix v1| plus sorted lowercase UUID pairs optionUUID:valueUUID separated by semicolons; optionless signature is v1|. Proposed maximum 1024 ASCII bytes and UNIQUE(product_id, option_signature), NOT NULL after validation. Bound/encoding/case rules require approval. Never truncate. Services validate ownership, one value per option, completeness and equality to the signature. Option-set edits regenerate all affected combinations transactionally; never change historical order options.
 
-Retain ProductImage.position/is_primary and at-most-one primary image. Product-only media is the baseline; variant-specific media remains unresolved. PRD CAT-04 relevant attribute filters are preserved: approve the filter list and whether non-option attributes need JSON storage or a separately approved model. Category/brand/price/availability/options alone are not an approved scope reduction.
+Retain ProductImage.position/is_primary and at-most-one primary image. Product-only media is the approved initial scope; variant-specific media and non-option attribute storage are explicitly deferred. PRD CAT-04 remains a later delivery requirement, not permission to add speculative entities to this migration. Supabase Storage remains planned; no integration is implemented.
 
 USD/Decimal are targets. Proposed numeric(12,2) applies to variant price/compare-at price, order/line amounts and payments. Proposed explicit char(3) currency on ProductVariant, Order, OrderItem and Payment has a USD CHECK. Monetary bounds, tax-inclusive pricing and snapshot shape are B-05; binary floating-point calculations are prohibited.
 
-Preserve original order totals and line/address snapshots. Proposed line_total = quantity * unit_price before separately allocated tax/discount; subtotal sums line totals. Proposed additions: OrderItem.tax_total/discount_total, Order.tax_details_snapshot/shipping_method_snapshot JSONB. Required/nullable fields and allocation/rounding need approval; half-up and US-only shipping remain proposals. No universal US tax rate or shipping threshold is established.
+Preserve original order totals and line/address snapshots. Approved line_total = quantity * unit_price is gross before tax/discount; subtotal sums gross lines. Line tax/discount allocations remain nullable and informational; do not count them again in grand_total. Order shipping_total/tax_total are required Decimal(12,2), default zero for applicable no-charge/zero-tax cases. Grand_total = subtotal + shipping_total + tax_total - discount_total. Optional order tax/shipping descriptive JSON is retained. Unknown line detail is not zero. Rounding, tax/shipping calculation and quote finalization remain later service requirements; no universal rate or threshold is established.
 
 Freeze snapshots at pending-order creation after complete authoritative totals. If the selected provider determines different totals afterward, approve a quote/finalization protocol rather than silently altering the order. API decimal serialization/minor-unit conversion is explicit. Order.user_id is required; saved-address/catalog edits and deletion cannot rewrite historical purchases. Any financial correction requires an approved auditable process.
 
@@ -187,7 +189,7 @@ All IDs are immutable; propose ON UPDATE RESTRICT. R = RESTRICT, N = SET NULL, C
 | ProductVariant.product_id -> Product | No | R |
 | VariantOptionValue.variant_id / option_value_id -> ProductVariant / ProductOptionValue | No | R / R |
 | InventoryItem.variant_id -> ProductVariant | No | R |
-| Cart.user_id -> User | Yes | N, or R if composite ownership FKs adopted |
+| Cart.user_id -> User | Yes | R; approved exclusive ownership prohibits automatic owner removal |
 | CartItem.cart_id / variant_id -> Cart / ProductVariant | No | C / R |
 | CheckoutAttempt.user_id / cart_id -> User / Cart | No | R / R |
 | CheckoutAttempt.order_id -> Order | Yes | R |
@@ -208,6 +210,8 @@ RESTRICT does not prevent deleting an unreferenced child, editing snapshots or r
 
 ## 9. Unique constraints and PostgreSQL checks
 
+Approved ownership CHECK: exactly one of cart.user_id and guest_token_hash is non-null. The User FK uses RESTRICT instead of SET NULL to avoid orphaning the cart. Guest claiming must set user_id and clear the token in one statement; merge/select an existing active customer cart transactionally rather than violate uniqueness temporarily.
+
 Existing: User(auth_id); Brand/Category/Product(slug); ProductVariant(sku); ProductOption(product_id, name); ProductOptionValue(option_id, value); InventoryItem(variant_id); CartItem(cart_id, variant_id); Order(order_number); OrderAddress(order_id); both join PKs; Payment(provider, provider_payment_id) and (provider, provider_checkout_session_id) when present; PaymentEvent(provider, provider_event_id). Email uniqueness is not assumed.
 
 Proposed: CheckoutAttempt(user_id, idempotency_key), CheckoutAttempt(order_id), Order(source_cart_id), Order(accepted_payment_id), ProductVariant(product_id, option_signature), InventoryReservation(checkout_attempt_id, inventory_item_id), and supporting Payment(id, order_id) / optional Cart(id, user_id), Order(id, user_id) keys for composite FKs.
@@ -216,10 +220,10 @@ Proposed partial unique indexes:
 - Address(user_id) WHERE is_default.
 - ProductImage(product_id) WHERE is_primary.
 - ProductVariant(product_id) WHERE is_default (at most one even on drafts).
-- Cart(user_id) WHERE status = ACTIVE AND user_id IS NOT NULL (policy still proposed).
+- Cart(user_id) WHERE status = ACTIVE AND user_id IS NOT NULL (approved).
 - CheckoutAttempt(cart_id) WHERE status IN (RECEIVED, PROCESSING, AWAITING_PAYMENT).
 - InventoryMovement(reservation_id) WHERE reason = SALE AND reservation_id IS NOT NULL.
-- Guest-token hash uniqueness when present, if adopted in B-06.
+- Cart(guest_token_hash) WHERE guest_token_hash IS NOT NULL (approved).
 
 CHECK candidates: nonnegative required money; positive item/reservation quantities; 0 <= reserved <= on_hand; nonnegative revisions/retry counts; positive fingerprint_version; bounded nonempty key/signature; Category.parent_id != id; SALE requires reservation_id; currency = USD; approved same-row order-total equation. Required fields also need NOT NULL.
 
@@ -247,23 +251,23 @@ Evaluate FK access and existing left-prefix coverage before adding redundant ind
 
 Required future tests: ownership/FKs; key replay/conflict; stale-worker fencing; two keys/one cart; replay after retention; option signatures/default existence; invalid money/quantities; multi-line rollback; last-unit race; expiry/delayed webhook; duplicate distinct events; multiple true settlements; persistent reconciliation; snapshots/deletion/history preservation.
 
-## 12. Remaining schema decisions
+## 12. Decision registry and remaining application work
 
-| ID | Approval still needed | Concrete review candidate |
+| ID | Design area | Initial migration resolution |
 | --- | --- | --- |
 | B-01 | Checkout fields/states/ownership and conversion | Section 3; unique frozen source cart, replacement policy, composite FK choice |
-| B-02 | Catalog lifecycle/signatures/filter shape | Category/variant enum values, signature bound/case rules, brand archival, non-option filters and media ownership |
+| B-02 | Catalog lifecycle/signatures/filter shape | Existing implemented lifecycle/signature contracts retained; extra Brand archival, non-option attributes and variant media explicitly deferred |
 | B-03 | Reservation and movement links | Required order/attempt references, line uniqueness, reservation-linked SALE movements |
 | B-04 | Acceptance/reconciliation/event recovery | Same-order accepted payment, persistent reconciliation fields, provider-object linking and provider-state mapping |
-| B-05 | Monetary precision and snapshot contract | numeric(12,2) bounds, currency, line/tax/shipping/discount fields and nullability |
-| B-06 | Deletion/privacy-compatible ownership | Complete matrix, guest identity rules, retained local users/idempotency history and DB immutability enforcement level |
+| B-05 | Monetary precision and snapshot contract | Approved numeric(12,2), USD, gross lines and nullable breakdowns; required order shipping/tax with zero defaults |
+| B-06 | Deletion/privacy-compatible ownership | Approved cart XOR and token uniqueness; Cart User FK RESTRICT; historical matrix preserved, service/audit policy remains future work |
 | B-07 | Toolchain and migration scope | Compatible pinned versions, native/SQL feature strategy and complete baseline approval |
 
 Later business policies, if approved storage suffices: exact key/guest-cart retention (48 hours/30 days still proposed), guest merge/caps, worker cadence, backoff, customer cancellation permissions, staff refund procedures, tax/rate providers, geography, rounding algorithm and reporting definitions. Decide these before their features ship. The 30-minute initial target is established; coordination and late-payment recovery mechanics are needed before checkout.
 
-The original design section 12 had a broader migration gate. This revision explicitly proposes separating schema shape from later behavior; owner approval of the narrowed gate is still required. Any tax/shipping/privacy/provider choice that changes storage remains blocking for affected tables. Entity approval alone does not approve a migration, a 23rd entity or a refund workflow.
+The owner resolved the baseline storage gates and authorized local generation. Future tax/shipping/privacy/provider changes that require different storage need a separately reviewed migration. No connection/application, 23rd entity or refund workflow is authorized.
 
-For the current Part A handoff, consult foundation sections 4 and 7 for the actual remaining migration requirements. Concrete proposed enums, Decimal(12,2), scalar FKs/deletion matrix, accepted-payment composite membership and required reservation links have been implemented. Optional composite checkout owner/source FKs are not adopted; locked ownership checks remain mandatory future service work. Custom partial indexes/CHECKs are documented SQL, not deployed protections. Schema-affecting brand/filter/media/guest choices and extra financial snapshot requiredness remain explicit review items.
+For the current Part A handoff, consult foundation sections 4 and 7 for the actual remaining migration requirements. Concrete proposed enums, Decimal(12,2), scalar FKs/deletion matrix, accepted-payment composite membership and required reservation links have been implemented. Optional composite checkout owner/source FKs are not adopted; locked ownership checks remain mandatory future service work. Custom partial indexes/CHECKs are documented SQL, not deployed protections. The owner has now approved the four baseline decisions, including financial/address nullability, guest/cart constraints and catalog deferrals. Their old readiness blockers are closed.
 
 ## 13. Documentation and code alignment
 

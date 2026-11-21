@@ -1,6 +1,6 @@
 # Database
 
-The approved architecture includes **22 entities**, with CheckoutAttempt separate from Payment. Part A implements the documented Prisma contracts and lazy NestJS infrastructure. No migration has been generated/applied or database connected; unresolved details and PostgreSQL SQL still require migration review.
+The approved architecture includes **22 entities**, with CheckoutAttempt separate from Payment. The initial migration is generated locally with all 13 enums and custom PostgreSQL constraints. It is not applied; no database has been connected. Review the migration and foundation record before separately authorizing PostgreSQL access.
 
 - [Database design](Sellio_DATABASE_DESIGN.md)
 - [Implementation specification and Prisma plan](DATABASE_IMPLEMENTATION_SPEC.md)

@@ -1,5 +1,5 @@
-// Part A only: PostgreSQL CHECKs and partial indexes are documented in
-// docs/database/PRISMA_FOUNDATION.md and must accompany the future migration.
+// PostgreSQL CHECKs and partial indexes are maintained in the initial migration.
+// See docs/database/PRISMA_FOUNDATION.md for the custom SQL and service invariants.
 generator client {
   provider               = "prisma-client"
   output                 = "../src/generated/prisma"
@@ -369,7 +369,7 @@ model Cart {
   revision         Int               @default(0)
   createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   items            CartItem[]
   checkoutAttempts CheckoutAttempt[]
   order            Order?            @relation("OrderSourceCart")
@@ -432,8 +432,8 @@ model Order {
   status                         OrderStatus
   currency                       String                 @db.Char(3)
   subtotal                       Decimal                @db.Decimal(12, 2)
-  shippingTotal                  Decimal                @map("shipping_total") @db.Decimal(12, 2)
-  taxTotal                       Decimal                @map("tax_total") @db.Decimal(12, 2)
+  shippingTotal                  Decimal                @default(0) @map("shipping_total") @db.Decimal(12, 2)
+  taxTotal                       Decimal                @default(0) @map("tax_total") @db.Decimal(12, 2)
   discountTotal                  Decimal                @map("discount_total") @db.Decimal(12, 2)
   grandTotal                     Decimal                @map("grand_total") @db.Decimal(12, 2)
   taxDetailsSnapshot             Json?                  @map("tax_details_snapshot") @db.JsonB

@@ -1,14 +1,16 @@
 # Sellio — Database Design Document
 
 **Version:** 0.2 (Draft)  
-**Status:** Part A Prisma schema implemented; migration SQL/review/application pending
+**Status:** Initial migration prepared locally with approved readiness decisions; not applied
 
 **Last updated:** 2026-11-19  
 **Database:** PostgreSQL  
 **ORM:** Prisma  
 **Scope:** V1 single-store electronics storefront, reusable commerce core
 
-**Implementation update — 2026-11-20:** the owner authorized Part A schema/client/infrastructure using the consistent concrete contracts below. The [foundation record](PRISMA_FOUNDATION.md) identifies implemented fields and the remaining provisional nullability/metadata decisions; the Prisma schema is the implementation artifact. Historical proposal language below explains the design, not a prohibition on the now-authorized Part A. No migration has been generated/applied, no SQL constraints have been executed, and no business service or database connection is claimed.
+**Migration readiness — 2026-11-20:** the owner approved nullable saved/historical line2/phone/region, gross line accounting, required order shipping/tax amounts with zero defaults, exclusive cart ownership with unique non-null guest token hashes and one active customer cart, and deferral of extra Brand archival/non-option attribute/variant-media storage. The initial migration contains 22 tables/13 enums plus custom SQL. No database connection or application has occurred. These approvals supersede older provisional wording below; service workflows remain separate.
+
+**Implementation update — 2026-11-20:** the owner authorized Part A schema/client/infrastructure using the consistent concrete contracts below. The [foundation record](PRISMA_FOUNDATION.md) identifies implemented fields and the now-approved readiness decisions; the Prisma schema is the implementation artifact. Historical proposal language below explains the design, not a prohibition on the now-authorized Part A. An initial migration has since been generated locally; no SQL has been executed against a database, and no business service or database connection is claimed.
 
 ## 1. Purpose and boundaries
 
@@ -22,7 +24,7 @@ V1 supports one store, one initial stock location, USD transactions, authenticat
 
 - **Identifiers:** UUID primary keys generated server-side or by the database; avoid exposing sequential IDs as authorization tokens.
 - **Time:** `timestamptz` in UTC for audit and expiry fields; display in the user's timezone.
-- **Money:** USD and decimal-based values are the target. Proposed `numeric(12,2)` bounds and exact snapshot shape require schema approval; use Prisma `Decimal`, not JavaScript floating-point arithmetic. Store explicit currency on variant prices, orders, order items and payments. Rounding/provider behavior must be settled before checkout; any impact on stored precision or snapshots remains a migration blocker.
+- **Money:** USD and decimal-based values are the target. Approved monetary storage uses `numeric(12,2)` with gross line amounts and nullable optional breakdowns; use Prisma `Decimal`, not JavaScript floating-point arithmetic. Store explicit currency on variant prices, orders, order items and payments. Rounding/provider behavior must be settled before checkout; any impact on stored precision or snapshots remains a migration blocker.
 - **Naming:** Singular PascalCase Prisma models mapped to snake_case database tables; consistently named foreign keys and unique constraints.
 - **Deletion:** Archive products and deactivate variants; preserve orders, payment records, and audit history. Define privacy-driven deletion/anonymization separately.
 - **Authorization:** Row ownership and role checks are enforced in the API; database foreign keys are not a substitute for authorization.
@@ -75,6 +77,8 @@ Supabase Auth remains the identity authority. The API verifies access tokens and
 
 `id uuid PK`, `user_id uuid FK → User NOT NULL`, `recipient_name`, `line1`, `line2`, `city`, `region`, `postal_code`, `country_code`, `phone` (optional), `is_default boolean`, timestamps. Only the owner may read or modify saved addresses. If using a default-address flag, enforce at most one default per user via a **partial unique index** or equivalent transaction-safe design.
 
+Nullable line2, phone and region are approved on both saved and historical address records. Country-specific validation belongs in application services.
+
 ## 6. Catalog model
 
 ### Brand, Category, Product
@@ -92,11 +96,11 @@ Supabase Auth remains the identity authority. The API verifies access tokens and
 - **ProductVariant:** `id PK`, `product_id FK`, `sku UNIQUE`, `price numeric(12,2)`, `compare_at_price numeric(12,2) NULL`, `status`, `is_default`, timestamps. Check `price >= 0`, and if present `compare_at_price >= 0`.
 - **VariantOptionValue:** composite `PK(variant_id, option_value_id)`; links a variant to each selected option value.
 
-Preserve category and variant lifecycle fields. Proposed enum values are CategoryStatus(DRAFT, ACTIVE, ARCHIVED) and VariantStatus(ACTIVE, INACTIVE); they require approval rather than silently substituting `is_active`. Brand archival representation remains unspecified. Exactly one default variant is required for each published/ACTIVE product. A partial unique index enforces at most one; publication and default-switch services enforce existence and validity. Drafts may temporarily lack a default.
+Preserve category and variant lifecycle fields. Proposed enum values are CategoryStatus(DRAFT, ACTIVE, ARCHIVED) and VariantStatus(ACTIVE, INACTIVE); they require approval rather than silently substituting `is_active`. Additional Brand archival fields are explicitly deferred from the initial migration. Exactly one default variant is required for each published/ACTIVE product. A partial unique index enforces at most one; publication and default-switch services enforce existence and validity. Drafts may temporarily lack a default.
 
 Every sellable product has at least one variant; products without configurable options use one default variant. **A relational join table alone does not guarantee that a variant has exactly one value for each product option or that two variants cannot have the same option combination.** Enforce option ownership, completeness, and canonical combination uniqueness in a transactional domain service; consider storing a derived canonical `option_signature` with unique `(product_id, option_signature)` after validation. A variant's price is the current catalog price, not an order-history source of truth.
 
-The proposed signature uses versioned, sorted UUID pairs, a 1024-byte ASCII bound and an explicit optionless value; encoding/bound/update rules await B-02 approval in the implementation specification. PRD CAT-04 attribute filtering is preserved: an approved required-filter list must establish whether option fields suffice or additional JSON storage is needed. Product-only images remain the baseline; variant media is unresolved. Do not silently remove non-option filtering or add a 23rd model.
+The proposed signature uses versioned, sorted UUID pairs, a 1024-byte ASCII bound and an explicit optionless value; the bounded storage/uniqueness is implemented, and canonicalization/update rules remain later service requirements. PRD CAT-04 remains later delivery work; non-option attribute storage is explicitly deferred from this migration. Product-only images remain the baseline; variant media is also explicitly deferred. Do not silently remove non-option filtering or add a 23rd model.
 
 ## 7. Inventory model
 
@@ -110,7 +114,7 @@ Create every variant and its balance atomically, including inactive/default vari
 
 `id uuid PK`, `inventory_item_id FK`, `order_id FK → Order NULL`, `quantity integer > 0`, `status enum(ACTIVE, CONSUMED, RELEASED, EXPIRED)`, `expires_at`, timestamps. A checkout reference or order reference must be used to make reservation creation idempotent; finalize the precise checkout key before implementation.
 
-Target initial duration: **30 minutes**, stored as an actual expiry, coordinated with the eventual Stripe integration. Proposed B-03 refinement adds required `checkout_attempt_id` and makes `order_id` required because local order/reservation creation is atomic. Proposed unique `(checkout_attempt_id, inventory_item_id)` prevents duplicate allocation for a normalized line. This is an explicit refinement of the original nullable order link, awaiting approval.
+Target initial duration: **30 minutes**, stored as an actual expiry, coordinated with the eventual Stripe integration. Proposed B-03 refinement adds required `checkout_attempt_id` and makes `order_id` required because local order/reservation creation is atomic. Proposed unique `(checkout_attempt_id, inventory_item_id)` prevents duplicate allocation for a normalized line. This explicit refinement of the original nullable order link was implemented in Part A and is included in the initial migration.
 
 ### InventoryMovement
 
@@ -141,6 +145,8 @@ Proposed `Order.source_cart_id NOT NULL UNIQUE` and a live-attempt partial uniqu
 
 ## 9. Orders model
 
+Approved financial contract: required unit_price, quantity and gross line_total = quantity * unit_price; nullable line tax/discount breakdown means unavailable, not zero. Subtotal sums gross lines. Grand_total = subtotal + shipping_total + tax_total - discount_total; do not double-count line allocations. Order tax_total and shipping_total are required numeric(12,2), default zero where appropriate. No extra monetary field is introduced; all amounts and addresses remain immutable historical snapshots.
+
 ### Order
 
 `id uuid PK`, `order_number text UNIQUE`, `user_id uuid FK → User NOT NULL` (authenticated V1 checkout), `status enum(PENDING_PAYMENT, PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED, PAYMENT_FAILED)`, `currency char(3)`, `subtotal`, `shipping_total`, `tax_total`, `discount_total`, `grand_total` (all numeric), `created_at`, `updated_at`, `paid_at NULL`.
@@ -156,7 +162,7 @@ Retain the existing order enum and separate Payment.status. Proposed fields are 
 
 Order snapshots and financial totals are immutable after placement except for explicit, auditable corrections. Tax breakdown detail may require an additional snapshot field/table depending on provider output.
 
-The current target freezes pending-order snapshots only after complete authoritative totals. Proposed B-05 adds line tax/discount amounts and order tax/shipping-method JSON snapshots without another entity. Exact precision, line-total semantics, nullability and provider finalization must be approved; there is no automatic permission to mutate snapshots when a later provider quote differs. Any correction process requires separate audit approval.
+The current target freezes pending-order snapshots only after complete authoritative totals. Proposed B-05 adds line tax/discount amounts and order tax/shipping-method JSON snapshots without another entity. Precision, gross-line semantics and nullability are now approved; provider finalization remains a later service requirement; there is no automatic permission to mutate snapshots when a later provider quote differs. Any correction process requires separate audit approval.
 
 ## 10. Payments and provider events
 
@@ -164,7 +170,7 @@ The current target freezes pending-order snapshots only after complete authorita
 
 `id PK`, `order_id FK`, `provider enum(STRIPE)`, `provider_payment_id NULL`, `provider_checkout_session_id NULL`, `amount`, `currency`, `status enum(PENDING, REQUIRES_ACTION, SUCCEEDED, FAILED, CANCELLED)`, timestamps. An order may have multiple attempts. Unique provider identifiers when present; store no card numbers or sensitive payment credentials.
 
-Multiple actual settlements must remain recordable as SUCCEEDED. Never add uniqueness on SUCCEEDED per order. Proposed Order.accepted_payment_id designates at most one fulfillment settlement; it does not erase an extra/late payment. Proposed reconciliation status NONE/REQUIRED/RESOLVED, reason, detection/resolution timestamps, resolver User FK and sanitized resolution note live on Order and Payment. These fields and provider retry/status mapping await B-04 approval.
+Multiple actual settlements must remain recordable as SUCCEEDED. Never add uniqueness on SUCCEEDED per order. Proposed Order.accepted_payment_id designates at most one fulfillment settlement; it does not erase an extra/late payment. Proposed reconciliation status NONE/REQUIRED/RESOLVED, reason, detection/resolution timestamps, resolver User FK and sanitized resolution note live on Order and Payment. These fields are implemented in Part A and the initial migration; provider retry/status mapping remains later service work.
 
 ### PaymentEvent
 
@@ -205,7 +211,9 @@ Do **not** hold a database transaction open during a network call to Stripe. Use
 
 ## 12. Open decisions and migration gate
 
-The entity count is settled at **22**. This revision proposes a narrower migration gate separating persistent schema from later service behavior; the owner must approve that gate and the detailed schema before migrations.
+**Current gate result:** the four readiness questions are resolved by the owner. Brand stays unchanged; additional Brand archival fields, non-option attribute storage and variant media are deferred. Cart token uniqueness and ownership XOR are approved; Cart.user_id uses ON DELETE RESTRICT because SET NULL would violate XOR. Guest-to-customer transition updates owner/token atomically and respects one-active-cart uniqueness. Historical source carts cannot be converted twice. These decisions close the corresponding baseline storage gates; the remaining entries below describe historical planning and later service work, not a reason to block the approved local migration preparation.
+
+The entity count is settled at **22**. The owner approved the four baseline storage decisions and local migration generation. Connection/application still requires explicit approval; later service behavior does not block preparing this approved baseline.
 
 Schema-blocking decisions are tracked once in the [implementation specification section 12](DATABASE_IMPLEMENTATION_SPEC.md#12-remaining-schema-decisions):
 

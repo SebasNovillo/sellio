@@ -14,6 +14,7 @@ config({
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: { path: 'prisma/migrations' },
-  // Validation and generation need no URL. A future migration must supply one.
-  datasource: { url: process.env.DATABASE_MIGRATION_URL ?? process.env.DATABASE_URL },
+  // CLI operations use the session pooler only; never fall back to the runtime URL.
+  // Missing/blank DIRECT_URL still permits offline validation and generation.
+  datasource: { url: process.env.DIRECT_URL || undefined },
 });

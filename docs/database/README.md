@@ -10,4 +10,4 @@ The approved architecture includes **22 entities**, with CheckoutAttempt separat
 
 PostgreSQL and Prisma 7.10.1 are the persistence stack. Schema validation, client generation, type checks and builds require no database. The API requires DATABASE_URL to configure its lazy client, but does not connect until a query is requested.
 
-`apps/api/.env.example` documents runtime DATABASE_URL and optional DATABASE_MIGRATION_URL. Keep both server-side. Select/provision approved PostgreSQL and review the complete migration plus custom SQL in a separately authorized task. Seed data, business services and database-backed tests are deferred.
+`apps/api/.env.example` documents runtime DATABASE_URL and CLI-only DIRECT_URL. Keep both server-side in ignored local environment files. See [Supabase connections](SUPABASE_CONNECTIONS.md) for the transaction/session pooler split and the separately approved connection/migration steps. Seed data, business services and database-backed tests are deferred.

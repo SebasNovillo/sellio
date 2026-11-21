@@ -7,6 +7,7 @@ import { PrismaClient } from '../../generated/prisma/client.js';
 export class PrismaService extends PrismaClient implements OnModuleDestroy {
   constructor(config: ConfigService) {
     super({
+      // Leave statementNameGenerator unset: unnamed statements work with Supavisor transaction mode.
       adapter: new PrismaPg({ connectionString: config.getOrThrow<string>('DATABASE_URL') }),
     });
   }

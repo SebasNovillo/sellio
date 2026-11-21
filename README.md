@@ -51,10 +51,12 @@ Frontend environment files remain optional. The API now requires a PostgreSQL DA
 ```powershell
 Copy-Item apps/storefront/.env.example apps/storefront/.env.local
 Copy-Item apps/admin/.env.example apps/admin/.env.local
-Copy-Item apps/api/.env.example apps/api/.env
+Copy-Item apps/api/.env.example apps/api/.env.local
 ```
 
 Only copy files that do not already exist. Integration placeholders may remain empty. The API reads `.env.local` before `.env` in `apps/api`; shell variables take precedence. Only `NEXT_PUBLIC_` variables belong in frontend environment files. Secret environment files are ignored by Git; examples are tracked.
+
+For Supabase development, set the API's `DATABASE_URL` to the shared transaction pooler and `DIRECT_URL` to the shared session pooler. Prisma CLI never falls back to the runtime URL. See [connection setup and approval boundaries](docs/database/SUPABASE_CONNECTIONS.md) before any connection or migration.
 
 ## Commands
 

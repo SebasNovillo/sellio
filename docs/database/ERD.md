@@ -1,9 +1,9 @@
 # Sellio — Entity Relationship Diagram
 
 **Version:** 0.2 — 2026-11-19  
-**Status:** Initial 22-table/13-enum migration prepared locally with approved financial/address/cart/catalog decisions; not applied.
+**Status:** Initial 22-table/13-enum migration applied and verified in sellio-dev on 2026-11-23; see the [verification record](initial-migration-verification.md).
 
-The owner authorized Part A on 2026-11-20. See [the foundation record](PRISMA_FOUNDATION.md) for actual implementation choices and remaining schema review. Optional composite checkout ownership FKs are not adopted; accepted-payment same-order membership is enforced in Prisma. The diagram and service minimums remain valid; custom SQL and future domain services are not yet deployed.
+The owner authorized Part A on 2026-11-20 and later separately authorized initial migration application. See [the foundation record](PRISMA_FOUNDATION.md) for implementation choices. Optional composite checkout ownership FKs are not adopted; accepted-payment same-order membership and approved custom SQL are deployed. The diagram and service minimums remain valid; domain services remain future work.
 
 Read with the [database design](Sellio_DATABASE_DESIGN.md) and [implementation specification](DATABASE_IMPLEMENTATION_SPEC.md). [ADR-010](../decisions/ADR-010-checkout-attempt.md) approves CheckoutAttempt as entity 22, not every field below. No standalone ERD file existed before this revision; this diagram supersedes the embedded 21-entity conceptual diagram.
 

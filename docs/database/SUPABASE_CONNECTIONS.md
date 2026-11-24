@@ -1,6 +1,6 @@
 # Supabase PostgreSQL connection preparation
 
-Status: strict client-to-pooler TLS and authorized read-only verification completed on 2026-11-23. The existing 22-model schema and initial migration are unchanged, and the migration has not been applied. Database modifications still require separate explicit approval.
+Status: strict TLS on both observed connection hops was verified after the owner enabled SSL enforcement. Following separate authorization, the unchanged initial migration was applied and verified in sellio-dev on 2026-11-23; see the [deployment record](initial-migration-verification.md). Further database modifications require separate approval.
 
 ## Connection routing
 
@@ -32,7 +32,7 @@ The parameter names are deliberately different. node-postgres uses sslrootcert f
 
 In the installed pg-connection-string 2.14.1, sslmode=require currently validates certificates by default; it is inaccurate to describe that mode universally as encrypt-only. Other drivers and libpq compatibility mode have different semantics. Runtime uses the explicit verify-full mode, and CLI uses its engine's require plus strict settings. Never enable validation bypasses or change hostname checks. When mixing a URL with an explicit adapter ssl object, URL SSL parameters can replace that object; the current application uses the URL alone. See [node-postgres SSL configuration](https://node-postgres.com/features/ssl), [Prisma SSL guidance](https://www.prisma.io/postgres/ssl-connection-error), and [Supabase verified TLS setup](https://supabase.com/docs/guides/platform/ssl-enforcement).
 
-## Read-only verification record: 2026-11-23
+## Historical read-only verification before initial migration: 2026-11-23
 
 The dashboard-provided Supabase Root 2021 CA is a CA certificate with a valid self-signature, no private key, and validity through 2031-04-26. Its SHA-256 fingerprint is `80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA`. Trust came from the independent dashboard download, not from accepting a certificate supplied by a failing endpoint.
 
@@ -46,7 +46,7 @@ These observations are a point-in-time check, not an application of the migratio
 
 ### Remaining operational review
 
-For both pooler modes, pg_stat_ssl reported ssl=false for the backend executing the queries. That view describes the **pooler-to-PostgreSQL** hop; it does not contradict the verified client-to-pooler TLS sockets, and it does not establish encryption through every provider-internal transport layer. Full-path TLS is not established by this verification. Review the provider's upstream/enforcement policy before approving migration application or claiming end-to-end TLS. Changing Supabase SSL enforcement is a separate infrastructure operation that may restart the database; it was not performed. See [Supabase SSL enforcement](https://supabase.com/docs/guides/platform/ssl-enforcement).
+The earlier, pre-enforcement check reported ssl=false for the pooler-to-PostgreSQL hop. The owner subsequently enabled Supabase SSL enforcement. Fresh pre/post-migration checks of both modes now report ssl=true, TLS 1.3 and TLS_AES_256_GCM_SHA384 for the current backend, within the same read-only transaction as identity inspection. Client sockets retain verified CA/hostname checks. The earlier upstream-encryption blocker is resolved; the internal upstream certificate-validation policy and every provider-internal transport layer remain independently unverified. No infrastructure setting was changed by migration execution. See [Supabase SSL enforcement](https://supabase.com/docs/guides/platform/ssl-enforcement).
 
 Both URLs currently authenticate as postgres, so endpoint separation is not least-privilege role separation. Review runtime privileges and Supabase Data API exposure/RLS before application access. No role, grant or policy was changed.
 

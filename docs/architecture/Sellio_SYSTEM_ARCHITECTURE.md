@@ -1,7 +1,8 @@
 # Sellio — System Architecture Document
 
 **Version:** 0.1 (Draft)  
-**Last updated:** 2026-11-19  
+**Last updated:** 2026-11-23
+
 **Status:** Proposed architecture; subject to implementation review  
 **Related document:** [PRD](Sellio_PRD.md)
 
@@ -167,7 +168,7 @@ Illustrative endpoints (not yet a finalized API contract):
 - **Integrity:** unique SKUs, slugs as scoped, provider event IDs, and cart variant combinations; indexed foreign keys and frequent query filters.
 - **Deletion:** archive products rather than removing records referenced by historical orders.
 
-The detailed [database design](../database/Sellio_DATABASE_DESIGN.md), [ERD](../database/ERD.md) and [implementation specification](../database/DATABASE_IMPLEMENTATION_SPEC.md) distinguish established targets from proposed field/cardinality/constraint refinements. The initial reservation target is 30 minutes coordinated with Stripe; published products require exactly one valid default variant. Payment success remains financial truth even when fulfillment requires persistent reconciliation. The owner authorized Part A schema/client/infrastructure on 2026-11-20; see [the foundation record](../database/PRISMA_FOUNDATION.md). No migration, connection or commerce service is claimed or authorized by that foundation.
+The detailed [database design](../database/Sellio_DATABASE_DESIGN.md), [ERD](../database/ERD.md) and [implementation specification](../database/DATABASE_IMPLEMENTATION_SPEC.md) distinguish established targets from proposed field/cardinality/constraint refinements. The initial reservation target is 30 minutes coordinated with Stripe; published products require exactly one valid default variant. Payment success remains financial truth even when fulfillment requires persistent reconciliation. The owner authorized Part A schema/client/infrastructure on 2026-11-20; see [the foundation record](../database/PRISMA_FOUNDATION.md). The unchanged initial migration was later separately authorized, applied and verified in sellio-dev on 2026-11-23; see the [deployment record](../database/initial-migration-verification.md). Commerce services and future security/database changes remain separate work.
 
 ## 10. Checkout and payment lifecycle
 

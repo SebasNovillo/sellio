@@ -1,9 +1,10 @@
 # Sellio — Database Design Document
 
 **Version:** 0.2 (Draft)  
-**Status:** Initial migration prepared locally with approved readiness decisions; not applied
+**Status:** Initial migration applied and verified in sellio-dev on 2026-11-23; see the [verification record](initial-migration-verification.md). Business services and security hardening remain separate work.
 
-**Last updated:** 2026-11-19  
+**Last updated:** 2026-11-23
+
 **Database:** PostgreSQL  
 **ORM:** Prisma  
 **Scope:** V1 single-store electronics storefront, reusable commerce core

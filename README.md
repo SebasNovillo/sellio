@@ -7,7 +7,7 @@ Sellio is a portfolio-quality electronics e-commerce platform demonstrating prof
 - Frontends: Next.js App Router, React, TypeScript, Tailwind CSS, ESLint.
 - Backend: Node.js, NestJS, REST, OpenAPI / Swagger.
 - Workspace: pnpm 10, Turborepo, shared TypeScript and ESLint configuration.
-- Database foundation: PostgreSQL Prisma schema/client (22 models); migrations have not been applied. Planned integrations: Supabase Auth and Storage, Stripe test mode.
+- Database foundation: PostgreSQL Prisma schema/client (22 models); the initial migration is applied and verified in sellio-dev. See the [deployment verification record](docs/database/initial-migration-verification.md). Planned integrations: Supabase Auth and Storage, Stripe test mode.
 - CI: GitHub Actions runs installation, linting, TypeScript checks, and production builds.
 - Offline database infrastructure tests use Node's built-in runner. Vitest or Jest for domain behavior and Playwright for browser flows remain planned; no business features are implemented.
 

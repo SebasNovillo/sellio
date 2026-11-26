@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm build && concurrently --kill-others \"tsc --watch --preserveWatchOutput\" \"node --watch dist/main.js\"",
-    "build": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json",
+    "build": "prisma generate --config prisma.offline.config.ts && tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "lint": "eslint .",
-    "typecheck": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.prisma.json",
-    "db:validate": "prisma validate --config prisma.config.ts",
-    "db:generate": "prisma generate --config prisma.config.ts",
-    "db:format": "prisma format --config prisma.config.ts",
-    "test:database": "prisma generate --config prisma.config.ts && tsc -p tsconfig.json && tsc -p tsconfig.test.json && node --test .test-build/database.test.js .test-build/migration.test.js"
+    "typecheck": "prisma generate --config prisma.offline.config.ts && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.prisma.json",
+    "db:validate": "prisma validate --config prisma.offline.config.ts",
+    "db:generate": "prisma generate --config prisma.offline.config.ts",
+    "db:format": "prisma format --config prisma.offline.config.ts",
+    "test:database": "prisma generate --config prisma.offline.config.ts && tsc -p tsconfig.json && tsc -p tsconfig.test.json && node --test .test-build/database.test.js .test-build/migration.test.js .test-build/environment.test.js .test-build/security.test.js"
   },
   "dependencies": {
     "@nestjs/common": "12.5.1",

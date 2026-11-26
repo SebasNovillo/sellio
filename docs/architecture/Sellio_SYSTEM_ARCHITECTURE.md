@@ -202,6 +202,8 @@ sequenceDiagram
 
 ## 11. Security and privacy
 
+The accepted [database access decision](../decisions/ADR-011-database-access.md) prepares a dedicated non-owner runtime role, explicit column permissions and 66 command-specific RLS policies. NestJS remains the exclusive business-data access layer and must enforce customer authorization; these backend-wide policies do not isolate individual customers. SQL and isolated credential loading are prepared only: live grants, RLS, Dashboard settings and credential cutover require separate Part B.2 approval. See the [implementation record](../database/database-access-security.md) and [operational runbook](../database/database-access-runbook.md).
+
 - HTTPS, strict input validation, safe output encoding, and appropriate security headers.
 - API rate limits on authentication-adjacent and abuse-prone endpoints.
 - Role and object-level authorization, including preventing access to another customer's orders.

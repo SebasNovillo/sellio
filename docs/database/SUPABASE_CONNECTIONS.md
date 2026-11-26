@@ -52,12 +52,20 @@ Both URLs currently authenticate as postgres, so endpoint separation is not leas
 
 ## Local secret configuration
 
+### B.1 credential isolation preparation (2026-11-25)
+
+The runtime loader selects only runtime settings from shell > .env.local > .env, without copying file values into process.env. It ignores migration keys in existing mixed files, rejects inherited migration URLs and disables ConfigService's process-env fallback. Existing private files, DATABASE_URL identity and TLS parameters are unchanged.
+
+The prepared `prisma.migrations.config.ts` reads DIRECT_URL only from shell > .env.migrations.local > .env.migrations. It never reads runtime files or falls back to DATABASE_URL. `.env.migrations.example` is a blank template. The existing default `prisma.config.ts` remains the legacy compatibility loader until B.2 approves provisioning the isolated private file and switching that entry point. Separate local files under one OS identity do not prevent filesystem access to secrets.
+
+The following legacy setup describes the preserved current files, not the target deployment boundary. Do not create or edit credentials as part of B.1. Follow the [access-hardening runbook](database-access-runbook.md) for the approved future split and runtime role cutover.
+
 1. If apps/api/.env.local does not exist, copy apps/api/.env.example there. If it exists, edit only the relevant entries locally; do not overwrite it. No real environment file is created by this task.
 2. Fill DATABASE_URL and DIRECT_URL only in that ignored backend file. Keep URLs out of frontend environment files, tracked examples, terminal command arguments, logs and screenshots. Quote the values in dotenv syntax. Do not send credentials in chat.
-3. Both Nest and Prisma CLI load shell variables before apps/api/.env.local before apps/api/.env. Clear stale shell values privately if they mask the local file. Do not print their contents. Existing .env files remain supported, but keep one authoritative local definition per variable.
+3. Runtime settings and the legacy default Prisma CLI use shell precedence over apps/api/.env.local over apps/api/.env. Nest now filters migration keys from those files and refuses inherited migration URL variables. The isolated CLI entry point uses migration-only files instead. Clear stale shell values privately if they mask the intended file; never print their contents.
 4. SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY and Stripe keys are not required for PostgreSQL connectivity and may stay empty. No Supabase SDK or auth/storage integration is introduced.
 
-The existing .gitignore excludes .env and .env.* at all directory levels, except .env.example. Never force-add a real environment file. Backend credentials must not be copied into NEXT_PUBLIC_ variables. For deployed environments use server-side secret injection; Prisma CLI and API processes should receive only the secrets and privileges they need. Endpoint separation is not privilege separation: using the same database role in both URLs grants the same database privileges. Least-privilege role provisioning is a separate authorized database operation.
+The .gitignore excludes .env and .env.* at all directory levels, except .env.example and .env.migrations.example. Never force-add a real environment file. Backend credentials must not be copied into NEXT_PUBLIC_ variables. For deployed environments use separate runtime/migration secret injection and artifacts. Endpoint separation is not privilege separation: using the same database role in both URLs grants the same privileges. Least-privilege role provisioning remains a separately authorized operation.
 
 ## Offline verification
 
@@ -73,7 +81,7 @@ pnpm build
 git check-ignore apps/api/.env apps/api/.env.local
 ```
 
-These checks do not test passwords, TLS handshakes, reachability, permissions or live schema state. Infrastructure tests use synthetic loopback URLs, intercept TCP and test CLI routing with explicit synthetic environment overrides. The existing health endpoint is process-only and is not a database connection test. The placeholder prisma.offline.config.ts remains restricted to local schema-only diff generation; never use it for a live connection or deployment.
+These checks do not test passwords, TLS handshakes, reachability, permissions or live schema state. Infrastructure tests use synthetic loopback URLs, intercept TCP and test CLI routing with explicit synthetic environment overrides. The existing health endpoint is process-only and is not a database connection test. All schema-only package scripts use prisma.offline.config.ts, which reads no local secrets; never use it for a live connection or deployment.
 
 ## Next connection test: explicit approval required
 

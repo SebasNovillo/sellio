@@ -1,0 +1,33 @@
+{
+  "runtimeRole": "sellio_runtime",
+  "ownerRole": "postgres",
+  "schema": "public",
+  "historyTable": "_prisma_migrations",
+  "initialMigration": "20261120000000_initial",
+  "initialMigrationSha256": "00e9084376d3d894acd2575dcc5999db2286b206b5eafd297a49cae35a5515b6",
+  "apiRoles": ["anon", "authenticated", "service_role", "authenticator"],
+  "tables": [
+    { "name": "user", "insertCheck": "role = 'CUSTOMER'::public.user_role", "update": ["email", "first_name", "last_name", "updated_at"], "delete": false },
+    { "name": "address", "insertCheck": "true", "update": ["recipient_name", "line1", "line2", "city", "region", "postal_code", "country_code", "phone", "is_default", "updated_at"], "delete": true },
+    { "name": "brand", "insertCheck": "true", "update": ["name", "slug", "updated_at"], "delete": false },
+    { "name": "category", "insertCheck": "true", "update": ["name", "slug", "parent_id", "status", "updated_at"], "delete": false },
+    { "name": "product", "insertCheck": "true", "update": ["name", "slug", "description", "status", "brand_id", "updated_at"], "delete": false },
+    { "name": "product_category", "insertCheck": "true", "update": [], "delete": true },
+    { "name": "product_image", "insertCheck": "true", "update": ["storage_path", "alt_text", "position", "is_primary", "updated_at"], "delete": true },
+    { "name": "product_option", "insertCheck": "true", "update": ["name", "position", "updated_at"], "delete": false },
+    { "name": "product_option_value", "insertCheck": "true", "update": ["value", "position", "updated_at"], "delete": false },
+    { "name": "product_variant", "insertCheck": "true", "update": ["sku", "price", "compare_at_price", "status", "is_default", "option_signature", "updated_at"], "delete": false },
+    { "name": "variant_option_value", "insertCheck": "true", "update": [], "delete": true },
+    { "name": "inventory_item", "insertCheck": "true", "update": ["quantity_on_hand", "quantity_reserved", "updated_at"], "delete": false },
+    { "name": "inventory_reservation", "insertCheck": "true", "update": ["status", "updated_at"], "delete": false },
+    { "name": "inventory_movement", "insertCheck": "true", "update": [], "delete": false },
+    { "name": "cart", "insertCheck": "true", "update": ["user_id", "guest_token_hash", "status", "revision", "updated_at"], "delete": false },
+    { "name": "cart_item", "insertCheck": "true", "update": ["quantity", "updated_at"], "delete": true },
+    { "name": "checkout_attempt", "insertCheck": "true", "update": ["status", "order_id", "processing_token", "processing_lease_expires_at", "retry_count", "next_retry_at", "retention_expires_at", "last_error_code", "updated_at"], "delete": false },
+    { "name": "order", "insertCheck": "true", "update": ["status", "accepted_payment_id", "reconciliation_status", "reconciliation_reason", "reconciliation_detected_at", "reconciliation_resolved_at", "reconciliation_resolved_by_user_id", "reconciliation_resolution_note", "paid_at", "updated_at"], "delete": false },
+    { "name": "order_item", "insertCheck": "true", "update": [], "delete": false },
+    { "name": "order_address", "insertCheck": "true", "update": [], "delete": false },
+    { "name": "payment", "insertCheck": "true", "update": ["provider_payment_id", "provider_checkout_session_id", "status", "reconciliation_status", "reconciliation_reason", "reconciliation_detected_at", "reconciliation_resolved_at", "reconciliation_resolved_by_user_id", "reconciliation_resolution_note", "updated_at"], "delete": false },
+    { "name": "payment_event", "insertCheck": "true", "update": ["payment_id", "processing_status", "processed_at", "error_code"], "delete": false }
+  ]
+}

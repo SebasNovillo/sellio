@@ -9,8 +9,10 @@ test-results/
 .env
 .env.*
 !.env.example
+!.env.migrations.example
 *.log
 .DS_Store
 Thumbs.db
 apps/api/src/generated/prisma/
 .test-build/
+apps/api/.security-snapshots/

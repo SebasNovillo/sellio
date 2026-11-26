@@ -1,0 +1,10 @@
+# Security preparation for future Docker builds; no deployment is added here.
+**/.env
+**/.env.*
+**/.security-snapshots
+**/.test-build
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/dist

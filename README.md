@@ -56,7 +56,7 @@ Copy-Item apps/api/.env.example apps/api/.env.local
 
 Only copy files that do not already exist. Integration placeholders may remain empty. The API reads `.env.local` before `.env` in `apps/api`; shell variables take precedence. Only `NEXT_PUBLIC_` variables belong in frontend environment files. Secret environment files are ignored by Git; examples are tracked.
 
-For Supabase development, set the API's `DATABASE_URL` to the shared transaction pooler and `DIRECT_URL` to the shared session pooler. Prisma CLI never falls back to the runtime URL. See [connection setup and approval boundaries](docs/database/SUPABASE_CONNECTIONS.md) before any connection or migration.
+For Supabase development, `DATABASE_URL` uses the shared transaction pooler and CLI-only `DIRECT_URL` uses the shared session pooler. Runtime configuration allowlists application settings and excludes migration keys; do not inject migration URLs into the API environment. Prisma CLI never falls back to the runtime URL. The isolated migration loader and `.env.migrations.example` are prepared; the existing default CLI loader and private files remain unchanged until the approved B.2 cutover. See [connection setup](docs/database/SUPABASE_CONNECTIONS.md) and the [access-hardening runbook](docs/database/database-access-runbook.md) before any connection or security change.
 
 ## Commands
 
